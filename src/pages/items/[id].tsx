@@ -29,10 +29,17 @@ export const ItemDetailPage = (props: { id: string }) => {
       isRevealed: false
     };
 
+    /**
+     * 全員が投票したかどうかをチェック
+     * @returns {boolean} 全員が投票した場合はtrue、そうでない場合はfalse
+     */
     function checkAllVoted() {
       return Object.keys(pokerState.votes).length === pokerState.participants;
     }
 
+    /**
+     * 投票結果を表示
+     */
     function revealVotes() {
       pokerState.isRevealed = true;
       // 全員の投票結果を表示
@@ -49,8 +56,14 @@ export const ItemDetailPage = (props: { id: string }) => {
           }
         }
       });
+
+      updateRevealButton(false);
     }
 
+    /**
+     * プランニングポーカーを開始
+     * @param {Event} e イベントオブジェクト
+     */
     function handleStartPoker(e) {
       e.preventDefault();
       const form = e.target;
@@ -63,11 +76,46 @@ export const ItemDetailPage = (props: { id: string }) => {
       pokerState.options = formData.get('options').split(' ').filter(Boolean);
       pokerState.votes = {};
       pokerState.isRevealed = false;
-      
+
       // 画面を更新
       updateView();
+
+      // 結果表示ボタンを追加（まだ存在しない場合のみ）
+      const tableContainer = document.getElementById('poker-table');
+      if (tableContainer && !tableContainer.querySelector('.reveal-button-container')) {
+        const revealButton = document.createElement('div');
+        revealButton.className = 'reveal-button-container mt-6 text-center';
+        revealButton.innerHTML = \`
+          <button
+            onclick="revealVotes()"
+            class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+          >
+            投票を打ち切って結果を表示
+          </button>
+        \`;
+        tableContainer.appendChild(revealButton);
+      }
     }
 
+    /**
+     * 結果表示ボタンの表示/非表示を更新
+     * @param {boolean} isVisible 表示/非表示の状態
+     */
+    function updateRevealButton(isVisible) {
+      const tableContainer = document.getElementById('poker-table');
+      if (!tableContainer) return;
+
+      let revealButton = tableContainer.querySelector('.reveal-button-container');
+      if (revealButton) {
+        revealButton.style.display = isVisible ? 'block' : 'none';
+      }
+    }
+
+    /**
+     * 投票を更新
+     * @param {number} participantIndex 参加者のインデックス
+     * @param {string} value 投票値
+     */
     function handleVote(participantIndex, value) {
       // 投票を更新
       pokerState.votes[participantIndex] = value;
@@ -85,9 +133,13 @@ export const ItemDetailPage = (props: { id: string }) => {
       // 全員が投票したかチェック
       if (checkAllVoted()) {
         revealVotes();
+        updateRevealButton(false);
       }
     }
 
+    /**
+     * 画面を更新
+     */
     function updateView() {
       const formContainer = document.getElementById('poker-form');
       const tableContainer = document.getElementById('poker-table');
@@ -128,19 +180,6 @@ export const ItemDetailPage = (props: { id: string }) => {
                 </td>
               </tr>
             \`).join('');
-
-          // 結果表示ボタンを追加
-          const revealButton = document.createElement('div');
-          revealButton.className = 'mt-6 text-center';
-          revealButton.innerHTML = \`
-            <button
-              onclick="revealVotes()"
-              class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
-            >
-              投票を打ち切って結果を表示
-            </button>
-          \`;
-          tableContainer.appendChild(revealButton);
         }
       } else {
         formContainer.style.display = 'block';
@@ -217,7 +256,7 @@ export const ItemDetailPage = (props: { id: string }) => {
 
           <div id="poker-table" class="bg-gray-50 p-6 rounded-lg" style="display: none;">
             <div class="mb-6">
-              <h3 class="text-xl font-semibold mb-2">プランニングポーカー</h3>
+              <h3 class="text-xl font-semibold mb-2">PBIタイトル</h3>
               <p class="text-gray-600">
                 <a id="poker-url" href="#" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 hover:underline"></a>
               </p>
