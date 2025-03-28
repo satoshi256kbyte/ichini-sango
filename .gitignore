@@ -1,9 +1,11 @@
 # 依存関係
 node_modules/*
+cdk/node_modules/*
 
 # ビルド成果物
 dist/
 build/
+cdk/dist/
 
 # 環境変数
 .env
@@ -33,3 +35,5 @@ temp/
 
 # AWS
 .serverless/
+cdk.out/
+cdk.context.json

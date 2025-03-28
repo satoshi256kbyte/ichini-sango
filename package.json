@@ -28,6 +28,9 @@
         "typescript": "^5.8.2"
     },
     "devDependencies": {
+        "aws-cdk": "^2.1006.0",
+        "aws-cdk-lib": "^2.186.0",
+        "constructs": "^10.4.2",
         "serverless": "^3.38.0",
         "serverless-lift": "^1.28.1"
     }

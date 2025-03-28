@@ -9,12 +9,14 @@ AWS Lambda + Hono + TypeScriptを使用したMPA（Multi-Page Application）プ�
 - TypeScript
 - Serverless Framework
 - esbuild
+- AWS CDK (Infrastructure as Code)
 
 ## 必要条件
 
 - Node.js (v18以上)
 - npm
 - AWS CLI (デプロイ用)
+- AWS CDK CLI (`npm install -g aws-cdk`)
 
 ## インストール
 
@@ -47,10 +49,39 @@ npm run build
 
 ## デプロイ
 
+### Serverless Frameworkを使用したデプロイ
+
 AWS Lambdaにデプロイするには：
 
 ```bash
 npm run deploy
+```
+
+### AWS CDKを使用したデプロイ
+
+1. CDKプロジェクトの依存関係をインストール：
+
+```bash
+cd cdk
+npm install
+```
+
+2. CDKのブートストラップを実行（初回のみ）：
+
+```bash
+npx cdk bootstrap
+```
+
+3. スタックをデプロイ：
+
+```bash
+npx cdk deploy
+```
+
+4. デプロイの確認：
+
+```bash
+npx cdk ls
 ```
 
 ## プロジェクト構造
@@ -59,6 +90,11 @@ npm run deploy
 .
 ├── src/           # ソースコード
 ├── dist/          # ビルド成果物
+├── cdk/           # AWS CDK設定
+│   ├── bin/       # CDKアプリケーションのエントリーポイント
+│   ├── lib/       # CDKスタック定義
+│   ├── package.json # CDKプロジェクトの依存関係
+│   └── tsconfig.json # CDKプロジェクトのTypeScript設定
 ├── esbuild.js     # esbuild設定
 ├── serverless.yml # Serverless Framework設定
 └── tsconfig.json  # TypeScript設定
