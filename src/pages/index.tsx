@@ -39,7 +39,7 @@ export const IndexPage = () => {
 
       <footer class="bg-white border-t">
         <div class="container mx-auto px-4 py-4">
-          <p class="text-center text-gray-600">© 2024 Ichini Sango</p>
+          <p class="text-center text-gray-600">プランニングポーカー with Backlog</p>
         </div>
       </footer>
     </div>
