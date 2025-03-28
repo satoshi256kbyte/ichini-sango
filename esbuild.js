@@ -17,6 +17,11 @@ const buildConfig = async () => {
     format: 'esm',
     minify: false,
     sourcemap: true,
+    jsx: 'automatic',
+    loader: {
+      '.tsx': 'tsx',
+      '.ts': 'ts',
+    },
   });
 };
 
