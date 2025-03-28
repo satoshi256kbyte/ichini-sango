@@ -8,6 +8,7 @@
         "build": "node esbuild.js",
         "dev": "NODE_ENV=development node --watch esbuild.js",
         "start": "NODE_ENV=development node --watch dist/index.js",
+        "dev:all": "npm run dev & npm run start",
         "deploy": "npm run build && serverless deploy",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
