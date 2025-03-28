@@ -9,7 +9,7 @@ const buildConfig = async () => {
   }
 
   await build({
-    entryPoints: ['src/index.ts'],
+    entryPoints: ['src/index.tsx'],
     bundle: true,
     outfile: 'dist/index.js',
     platform: 'node',
