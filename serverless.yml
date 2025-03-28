@@ -1,0 +1,28 @@
+service: ichini-sango-mpa
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-northeast-1
+  stage: ${opt:stage, 'dev'}
+  memorySize: 512
+  timeout: 10
+
+functions:
+  app:
+    handler: dist/index.handler
+    events:
+      - httpApi: '*'
+
+plugins:
+  - serverless-lift
+
+package:
+  patterns:
+    - "!node_modules/.bin/**"
+    - "!**/*.ts"
+    - "!.git/**"
+    - "!.vscode/**"
+    - "dist/**"
