@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import { Construct } from 'constructs';
 
 export class LambdaStack extends cdk.Stack {
@@ -27,5 +28,36 @@ export class LambdaStack extends cdk.Stack {
         NODE_ENV: 'production',
       },
     });
+
+    // API Gatewayの作成
+    const api = new apigateway.RestApi(this, 'IchiniSangoApi', {
+      restApiName: 'Ichini Sango API',
+      description: 'Ichini Sango API Gateway',
+      deployOptions: {
+        stageName: 'prod',
+      },
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS,
+        allowMethods: apigateway.Cors.ALL_METHODS,
+        allowHeaders: [
+          'Content-Type',
+          'X-Amz-Date',
+          'Authorization',
+          'X-Api-Key',
+          'X-Amz-Security-Token',
+          'X-Amz-User-Agent',
+        ],
+      },
+    });
+
+    // API GatewayとLambda関数の統合
+    const lambdaIntegration = new apigateway.LambdaIntegration(lambdaFunction, {
+      proxy: true,
+      allowTestInvoke: false,
+    });
+
+    // ルートの追加
+    api.root.addMethod('ANY', lambdaIntegration);
+    api.root.addResource('{proxy+}').addMethod('ANY', lambdaIntegration);
   }
 } 

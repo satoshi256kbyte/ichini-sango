@@ -10,6 +10,7 @@ AWS Lambda + Hono + TypeScriptを使用したMPA（Multi-Page Application）プ�
 - Serverless Framework
 - esbuild
 - AWS CDK (Infrastructure as Code)
+- Amazon API Gateway
 
 ## 必要条件
 
@@ -82,6 +83,12 @@ npx cdk deploy
 
 ```bash
 npx cdk ls
+```
+
+デプロイが完了すると、以下のような形式でAPI Gatewayのエンドポイントが表示されます：
+
+```
+https://[api-id].execute-api.[region].amazonaws.com/prod/
 ```
 
 ## プロジェクト構造
