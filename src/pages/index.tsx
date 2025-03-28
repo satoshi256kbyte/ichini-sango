@@ -12,16 +12,11 @@ export const IndexPage = () => {
     <div class="min-h-screen flex flex-col">
       <header class="bg-blue-600 text-white">
         <div class="container mx-auto px-4 py-4">
-          <h1 class="text-xl font-semibold">Ichini Sango</h1>
+          <h1 class="text-xl font-semibold">プランニングポーカー with Backlog</h1>
         </div>
       </header>
 
       <main class="flex-1 container mx-auto px-4 py-8">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl font-bold mb-4">アイテム一覧</h2>
-          <p class="text-gray-600">利用可能なアイテムの一覧です</p>
-        </div>
-
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {items.map(item => (
             <div key={item.id} class="bg-white rounded-lg shadow-lg flex flex-col">
