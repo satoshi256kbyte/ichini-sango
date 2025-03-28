@@ -7,6 +7,7 @@ interface PokerState {
   options: string[];
   votes: Record<number, string | null>;
   isRevealed: boolean;
+  votingRound: number;
 }
 
 export const ItemDetailPage = (props: { id: string }) => {
@@ -26,7 +27,8 @@ export const ItemDetailPage = (props: { id: string }) => {
       participants: 5,
       options: ['1', '2', '3', '5', '8', '13'],
       votes: {},
-      isRevealed: false
+      isRevealed: false,
+      votingRound: 1
     };
 
     /**
@@ -34,7 +36,9 @@ export const ItemDetailPage = (props: { id: string }) => {
      * @returns {boolean} 全員が投票した場合はtrue、そうでない場合はfalse
      */
     function checkAllVoted() {
-      return Object.keys(pokerState.votes).length === pokerState.participants;
+      const currentRoundVotes = Object.entries(pokerState.votes)
+        .filter(([key]) => key.startsWith(\`round_\${pokerState.votingRound}_\`));
+      return currentRoundVotes.length === pokerState.participants;
     }
 
     /**
@@ -44,12 +48,13 @@ export const ItemDetailPage = (props: { id: string }) => {
       pokerState.isRevealed = true;
       // 全員の投票結果を表示
       Array.from({ length: pokerState.participants }).forEach((_, index) => {
-        const row = document.querySelector(\`tr[data-participant="\${index}"]\`);
+        const row = document.querySelector(\`tr[data-participant="\${index}"][data-round="\${pokerState.votingRound}"]\`);
         if (row) {
           const buttonsCell = row.querySelector('td:last-child');
           if (buttonsCell) {
-            if (pokerState.votes[index]) {
-              buttonsCell.innerHTML = \`<span class="text-lg font-semibold">\${pokerState.votes[index]}</span>\`;
+            const voteKey = \`round_\${pokerState.votingRound}_\${index}\`;
+            if (pokerState.votes[voteKey]) {
+              buttonsCell.innerHTML = \`<span class="text-lg font-semibold">\${pokerState.votes[voteKey]}</span>\`;
             } else {
               buttonsCell.innerHTML = '<span class="text-gray-500">未投票</span>';
             }
@@ -65,20 +70,33 @@ export const ItemDetailPage = (props: { id: string }) => {
         const adoptButton = document.createElement('div');
         adoptButton.className = 'adopt-button-container mt-6 text-center';
         adoptButton.innerHTML = \`
-          <div class="space-y-4">
-            <h3 class="text-xl font-semibold">投票結果から採用する値を選択してください</h3>
-            <div class="flex justify-center space-x-2">
-              \${Array.from(new Set(Object.values(pokerState.votes).filter(Boolean)))
-                .sort((a, b) => parseInt(a) - parseInt(b))
-                .map(value => \`
-                <button
-                  type="button"
-                  onclick="handleAdopt('\${value}')"
-                  class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors text-lg font-semibold"
-                >
-                  \${value}
-                </button>
-              \`).join('')}
+          <div class="space-y-6">
+            <div>
+              <h3 class="text-xl font-semibold mb-4">投票結果から採用する値を選択してください</h3>
+              <div class="flex justify-center space-x-2">
+                \${Array.from(new Set(Object.entries(pokerState.votes)
+                  .filter(([key]) => key.startsWith(\`round_\${pokerState.votingRound}_\`))
+                  .map(([_, value]) => value)
+                  .filter(Boolean)))
+                  .sort((a, b) => parseInt(a) - parseInt(b))
+                  .map(value => \`
+                  <button
+                    type="button"
+                    onclick="handleAdopt('\${value}')"
+                    class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors text-lg font-semibold"
+                  >
+                    \${value}
+                  </button>
+                \`).join('')}
+              </div>
+            </div>
+            <div class="flex justify-center">
+              <button
+                onclick="handleRestartVoting()"
+                class="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+              >
+                再投票を開始する
+              </button>
             </div>
           </div>
         \`;
@@ -93,13 +111,107 @@ export const ItemDetailPage = (props: { id: string }) => {
         const adoptButton = tableContainer.querySelector('.adopt-button-container');
         if (adoptButton) {
           adoptButton.innerHTML = \`
-            <div class="text-center">
-              <h3 class="text-xl font-semibold mb-2">採用された値</h3>
-              <div class="text-3xl font-bold text-blue-600">\${value}</div>
+            <div class="text-center space-y-6">
+              <div>
+                <h3 class="text-xl font-semibold mb-2">採用された値</h3>
+                <div class="text-3xl font-bold text-blue-600">\${value}</div>
+              </div>
+              <div class="flex justify-center space-x-4">
+                <button
+                  onclick="handleConfirmAdopt('\${value}')"
+                  class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
+                >
+                  この値を採用する
+                </button>
+                <button
+                  onclick="handleRestartVoting()"
+                  class="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                >
+                  再投票を開始する
+                </button>
+              </div>
             </div>
           \`;
         }
       }
+    }
+
+    function handleConfirmAdopt(value) {
+      // 採用を確定
+      const tableContainer = document.getElementById('poker-table');
+      if (tableContainer) {
+        const adoptButton = tableContainer.querySelector('.adopt-button-container');
+        if (adoptButton) {
+          adoptButton.innerHTML = \`
+            <div class="text-center">
+              <h3 class="text-xl font-semibold mb-2">採用が確定しました</h3>
+              <div class="text-3xl font-bold text-green-600">\${value}</div>
+            </div>
+          \`;
+        }
+      }
+    }
+
+    function handleRestartVoting() {
+      // 投票ラウンドをインクリメント
+      pokerState.votingRound++;
+      pokerState.isRevealed = false;
+
+      // 採用ボタンを削除
+      const tableContainer = document.getElementById('poker-table');
+      if (tableContainer) {
+        const adoptButton = tableContainer.querySelector('.adopt-button-container');
+        if (adoptButton) {
+          adoptButton.remove();
+        }
+      }
+
+      // 新しい投票テーブルを追加
+      const newTableContainer = document.createElement('div');
+      newTableContainer.className = 'bg-gray-50 p-6 rounded-lg mt-8';
+      newTableContainer.innerHTML = \`
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold mb-2">再投票</h3>
+          <p class="text-gray-600">
+            <a href="\${pokerState.url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 hover:underline">\${pokerState.url}</a>
+          </p>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <tbody class="bg-white divide-y divide-gray-200">
+              \${Array.from({ length: pokerState.participants })
+                .map((_, index) => \`
+                <tr data-participant="\${index}" data-round="\${pokerState.votingRound}" class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    参加者 \${index + 1}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-center">
+                    <div class="flex justify-center space-x-2">
+                      \${pokerState.options.map(option => \`
+                        <button
+                          type="button"
+                          value="\${option}"
+                          onclick="handleVote(\${index}, '\${option}')"
+                          class="w-8 h-8 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                        >
+                          \${option}
+                        </button>
+                      \`).join('')}
+                    </div>
+                  </td>
+                </tr>
+              \`).join('')}
+            </tbody>
+          </table>
+        </div>
+      \`;
+
+      // 新しいテーブルを追加
+      tableContainer.appendChild(newTableContainer);
+
+      // 結果表示ボタンを表示
+      updateRevealButton(true);
     }
 
     /**
@@ -159,11 +271,12 @@ export const ItemDetailPage = (props: { id: string }) => {
      * @param {string} value 投票値
      */
     function handleVote(participantIndex, value) {
-      // 投票を更新
-      pokerState.votes[participantIndex] = value;
+      // 投票を更新（ラウンドごとに別々の投票を保存）
+      const voteKey = \`round_\${pokerState.votingRound}_\${participantIndex}\`;
+      pokerState.votes[voteKey] = value;
       
       // 該当の行のボタンの状態を更新
-      const row = document.querySelector(\`tr[data-participant="\${participantIndex}"]\`);
+      const row = document.querySelector(\`tr[data-participant="\${participantIndex}"][data-round="\${pokerState.votingRound}"]\`);
       if (row) {
         // ボタン群を非表示に
         const buttonsCell = row.querySelector('td:last-child');
@@ -202,7 +315,7 @@ export const ItemDetailPage = (props: { id: string }) => {
         if (tbody) {
           tbody.innerHTML = Array.from({ length: pokerState.participants })
             .map((_, index) => \`
-              <tr data-participant="\${index}" class="hover:bg-gray-50">
+              <tr data-participant="\${index}" data-round="\${pokerState.votingRound}" class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   参加者 \${index + 1}
                 </td>
