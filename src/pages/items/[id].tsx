@@ -58,6 +58,48 @@ export const ItemDetailPage = (props: { id: string }) => {
       });
 
       updateRevealButton(false);
+
+      // 採用ボタンを追加
+      const tableContainer = document.getElementById('poker-table');
+      if (tableContainer && !tableContainer.querySelector('.adopt-button-container')) {
+        const adoptButton = document.createElement('div');
+        adoptButton.className = 'adopt-button-container mt-6 text-center';
+        adoptButton.innerHTML = \`
+          <div class="space-y-4">
+            <h3 class="text-xl font-semibold">投票結果から採用する値を選択してください</h3>
+            <div class="flex justify-center space-x-2">
+              \${Array.from(new Set(Object.values(pokerState.votes).filter(Boolean)))
+                .sort((a, b) => parseInt(a) - parseInt(b))
+                .map(value => \`
+                <button
+                  type="button"
+                  onclick="handleAdopt('\${value}')"
+                  class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors text-lg font-semibold"
+                >
+                  \${value}
+                </button>
+              \`).join('')}
+            </div>
+          </div>
+        \`;
+        tableContainer.appendChild(adoptButton);
+      }
+    }
+
+    function handleAdopt(value) {
+      // 採用された値を表示
+      const tableContainer = document.getElementById('poker-table');
+      if (tableContainer) {
+        const adoptButton = tableContainer.querySelector('.adopt-button-container');
+        if (adoptButton) {
+          adoptButton.innerHTML = \`
+            <div class="text-center">
+              <h3 class="text-xl font-semibold mb-2">採用された値</h3>
+              <div class="text-3xl font-bold text-blue-600">\${value}</div>
+            </div>
+          \`;
+        }
+      }
     }
 
     /**
