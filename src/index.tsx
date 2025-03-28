@@ -1,4 +1,3 @@
-/** @jsx jsx */
 import { jsx } from 'hono/jsx'
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'

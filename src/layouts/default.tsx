@@ -1,4 +1,3 @@
-/** @jsx jsx */
 import { jsx } from 'hono/jsx'
 import type { FC, PropsWithChildren } from 'hono/jsx'
 

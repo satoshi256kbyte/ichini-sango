@@ -17,7 +17,7 @@ const buildConfig = async () => {
     format: 'esm',
     minify: false,
     sourcemap: true,
-    jsx: 'automatic',
+    jsx: 'transform',
     loader: {
       '.tsx': 'tsx',
       '.ts': 'ts',
